@@ -14,6 +14,45 @@ const geistMono = Geist_Mono({
 });
 
 export default function Home() {
+
+
+  const generateDownload = (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.style.display = "none";
+    link.href = url;
+    link.download = filename;
+
+    document.body.appendChild(link);
+    link.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+  };
+
+  async function handlePdfDownload() {
+
+    try {
+      const response = await fetch("/api/download-pdf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: "",
+      });
+
+      console.log("response info", response)
+
+      const blob = await response.blob();
+
+      generateDownload(blob, "test.pdf");
+
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+    }
+  }
+
   return (
     <>
       <Head>
@@ -57,14 +96,14 @@ export default function Home() {
               />
               Deploy now
             </a>
-            <a
-              href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.secondary}
-            >
-              Read our docs
-            </a>
+
+            <button
+
+              onClick={handlePdfDownload}
+              style={{ background: "pink", color: "black", fontWeight: "bold", width: "5rem" }}>
+              download pdf
+            </button>
+
           </div>
         </main>
         <footer className={styles.footer}>
