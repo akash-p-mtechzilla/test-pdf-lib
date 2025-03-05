@@ -1,10 +1,10 @@
 
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { page1 } from "@/page1";
 import { page2 } from "@/page2";
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function generatePdf(html: string, cloudlayerConfig: any) {
   const encodedHtml = Buffer.from(html).toString("base64");
@@ -67,6 +67,7 @@ export default async function handler(
 
     // Merge PDFs
     const mergedPdf = await PDFDocument.create();
+    mergedPdf.registerFontkit(fontkit);
     const titleDoc = await PDFDocument.load(titlePagePdf);
     const mainDoc = await PDFDocument.load(mainContentPdf);
 
@@ -83,20 +84,34 @@ export default async function handler(
     mainPages.forEach((page) => mergedPdf.addPage(page));
 
 
- const helveticaFont = await mergedPdf.embedFont(StandardFonts.Helvetica);
+    const fontUrl =
+      "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-400-normal.woff";
+    const fontRes = await axios.get(fontUrl, { responseType: "arraybuffer" });
+    const openSansFontBytes = fontRes.data;
+    const openSansFont = await mergedPdf.embedFont(openSansFontBytes);
+
     const pages = mergedPdf.getPages();
     const totalPages = pages.length;
     pages.forEach((page, index) => {
       const { width } = page.getSize();
-      // Draw the page number at the bottom right corner
-      page.drawText(`Page ${index + 1} of ${totalPages}`, {
-        x: width - 100, // adjust X coordinate as needed
-        y: 20,          // adjust Y coordinate as needed
-        size: 10,
-        font: helveticaFont,
-        color: rgb(0.5, 0.5, 0.5),
+
+      page.drawText(`Downloaded July 28th, 2025`, {
+        x: 40,
+        y: 20,
+        size: 8,
+        font: openSansFont,
+        color: rgb(37 / 255, 37 / 255, 37 / 255),
       });
-    });
+      // Draw the page number at the bottom right corner
+      page.drawText(`${index + 1} of ${totalPages}`, {
+        x: width - 100,
+        y: 20,
+        size: 8,
+        font: openSansFont,
+        color: rgb(37 / 255, 37 / 255, 37 / 255),
+      });
+
+    })
 
     const finalPdfBytes = await mergedPdf.save();
 
