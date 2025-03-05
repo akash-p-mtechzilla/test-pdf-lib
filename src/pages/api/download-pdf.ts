@@ -1,5 +1,5 @@
 
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { page1 } from "@/page1";
@@ -81,6 +81,22 @@ export default async function handler(
 
     titlePages.forEach((page) => mergedPdf.addPage(page));
     mainPages.forEach((page) => mergedPdf.addPage(page));
+
+
+ const helveticaFont = await mergedPdf.embedFont(StandardFonts.Helvetica);
+    const pages = mergedPdf.getPages();
+    const totalPages = pages.length;
+    pages.forEach((page, index) => {
+      const { width } = page.getSize();
+      // Draw the page number at the bottom right corner
+      page.drawText(`Page ${index + 1} of ${totalPages}`, {
+        x: width - 100, // adjust X coordinate as needed
+        y: 20,          // adjust Y coordinate as needed
+        size: 10,
+        font: helveticaFont,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+    });
 
     const finalPdfBytes = await mergedPdf.save();
 
