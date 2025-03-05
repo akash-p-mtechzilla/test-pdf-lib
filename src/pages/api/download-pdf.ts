@@ -53,24 +53,6 @@ export default async function handler(
     const mainContentHtml = page2()
     const mainContentPdf = await generatePdf(mainContentHtml, {
       projectId: process.env.CLOUDLAYER_PROGRAM_DETAILS_ID!,
-      headerTemplate: {
-        method: "extract",
-        selector: ".page-header-bob",
-        style: {
-          width: "100%",
-          margin: "-20px 0 0 0",
-          padding: "0",
-        },
-      },
-      footerTemplate: {
-        method: "extract",
-        selector: ".page-footer-bob",
-        style: {
-          width: "100%",
-          margin: "0",
-          padding: "0",
-        },
-      },
       format: "a4",
       printBackground: true,
       displayHeaderFooter: true,
